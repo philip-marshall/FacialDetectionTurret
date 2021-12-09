@@ -6,8 +6,7 @@ from scipy.signal import find_peaks
 import serial
 import time
 
-#def detectFaceFromSkin(contourss, bin_mask, frame, arduino):
-def detectFaceFromSkin(contourss, bin_mask, frame):
+def detectFaceFromSkin(contourss, bin_mask, frame, arduino):
     x,y,z = frame.shape
     rad = 0
     point_x = 0
@@ -42,25 +41,24 @@ def detectFaceFromSkin(contourss, bin_mask, frame):
         print("empty")
     if (largestCircleTotal/maxLargest == np.nan or largestCircleTotal/ maxLargest < .3):
         contourss = np.delete(contourss, index)
-        #detectFaceFromSkin(contourss, bin_mask, frame, arduino)
-        detectFaceFromSkin(contourss, bin_mask, frame)
+        detectFaceFromSkin(contourss, bin_mask, frame, arduino)
     else:
         cv2.rectangle(frame, (point_x, point_y), (point_x + width, point_y + width), (0,255,0), 1)
-        # dataX = int((int(point_x + rad) / int(y)) * 180)
-        # dataY = int((int(point_y + rad) / int(x)) * 180)
-        # print("X: " + str(dataX) + " Y: " + str(dataY))
-        # #if (dataX > 0 and dataY > 0 and dataX < 180 and dataY < 180):
-        # coords = "X" + str(dataX) + "Y" + str(dataY)
-        # if (arduino):
-        #     arduino.write(bytes(coords, 'utf-8'))
+        dataX = int((int(point_x + rad) / int(y)) * 180)
+        dataY = int((int(point_y + rad) / int(x)) * 180)
+        print("X: " + str(dataX) + " Y: " + str(dataY))
+        #if (dataX > 0 and dataY > 0 and dataX < 180 and dataY < 180):
+        coords = "X" + str(dataX) + "Y" + str(dataY)
+        if (arduino):
+            arduino.write(bytes(coords, 'utf-8'))
             
 
 
 # set the webcam
 video = cv2.VideoCapture(0)
 
-# # grab the arduino from the serial port
-# arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.1)
+# grab the arduino from the serial port
+arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.1)
 
 while(True):
       
@@ -163,11 +161,10 @@ while(True):
 
     contourss, _ = cv2.findContours(image=colorEdge, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
     try:
-        #detectFaceFromSkin(contourss, bin_mask, frame, arduino)
-        detectFaceFromSkin(contourss, bin_mask, frame)
+        detectFaceFromSkin(contourss, bin_mask, frame, arduino)
     except:
         print("Error")
-        # arduino.close()
+        arduino.close()
 
 
     ######arduino.write(bytes(str(point_x) + "," + str(point_y), 'utf-8'))
